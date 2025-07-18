@@ -1,22 +1,9 @@
 import { AnalysisResult, QuestionResult } from "@/components/StudyAssistant";
 import { extractTextFromPdfPage, extractPageRangeFromOcr } from "@/utils/pdfReader";
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-
-const validateApiKey = () => {
-  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_ACTUAL_GEMINI_API_KEY') {
-    throw new Error(
-      'Gemini API key is not configured properly. Please:\n' +
-      '1. Get your API key from https://makersuite.google.com/app/apikey\n' +
-      '2. Replace YOUR_ACTUAL_GEMINI_API_KEY in the .env file with your real API key\n' +
-      '3. Restart the development server'
-    );
-  }
-};
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyAJ2P2TqBOXQncnBgT0T_BNsLcAA7cToo4";
 
 export const analyzeImage = async (file: File, outputLanguage: "english" | "tamil" = "english"): Promise<AnalysisResult> => {
-  validateApiKey();
-  
   try {
     const base64Image = await convertToBase64(file);
     
@@ -88,18 +75,7 @@ Focus on:
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini API Error Response:', errorText);
-      
-      if (response.status === 503) {
-        throw new Error('Gemini API service is temporarily unavailable. Please try again in a few moments.');
-      } else if (response.status === 429) {
-        throw new Error('API rate limit exceeded. Please wait a moment before trying again.');
-      } else if (response.status === 401 || response.status === 403) {
-        throw new Error('Invalid API key. Please check your Gemini API key configuration.');
-      } else {
-        throw new Error(`Gemini API error (${response.status}): ${errorText}`);
-      }
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
@@ -133,8 +109,6 @@ export const generateQuestions = async (
   difficulty: string = "medium",
   outputLanguage: "english" | "tamil" = "english"
 ): Promise<QuestionResult> => {
-  validateApiKey();
-
   try {
     const combinedContent = analysisResults.map(result => ({
       keyPoints: result.keyPoints.join('\n'),
@@ -217,18 +191,7 @@ Ensure questions test:
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini API Error Response:', errorText);
-      
-      if (response.status === 503) {
-        throw new Error('Gemini API service is temporarily unavailable. Please try again in a few moments.');
-      } else if (response.status === 429) {
-        throw new Error('API rate limit exceeded. Please wait a moment before trying again.');
-      } else if (response.status === 401 || response.status === 403) {
-        throw new Error('Invalid API key. Please check your Gemini API key configuration.');
-      } else {
-        throw new Error(`Gemini API error (${response.status}): ${errorText}`);
-      }
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
@@ -278,8 +241,6 @@ export const generatePageAnalysis = async (
   importance: "high" | "medium" | "low";
   tnpscRelevance: string;
 }> => {
-  validateApiKey();
-  
   try {
     const textContent = await extractTextFromPdfPage(file, pageNumber);
     
@@ -336,18 +297,7 @@ Focus on:
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini API Error Response:', errorText);
-      
-      if (response.status === 503) {
-        throw new Error('Gemini API service is temporarily unavailable. Please try again in a few moments.');
-      } else if (response.status === 429) {
-        throw new Error('API rate limit exceeded. Please wait a moment before trying again.');
-      } else if (response.status === 401 || response.status === 403) {
-        throw new Error('Invalid API key. Please check your Gemini API key configuration.');
-      } else {
-        throw new Error(`Gemini API error (${response.status}): ${errorText}`);
-      }
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
@@ -393,8 +343,6 @@ export const analyzePdfContentComprehensive = async (
   totalKeyPoints: string[];
   tnpscCategories: string[];
 }> => {
-  validateApiKey();
-  
   try {
     const pageAnalyses = [];
     const allKeyPoints: string[] = [];
@@ -475,18 +423,8 @@ Focus on:
           });
 
           if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Gemini API Error Response:', errorText);
-            
-            if (response.status === 503) {
-              throw new Error('Gemini API service is temporarily unavailable. Please try again in a few moments.');
-            } else if (response.status === 429) {
-              throw new Error('API rate limit exceeded. Please wait a moment before trying again.');
-            } else if (response.status === 401 || response.status === 403) {
-              throw new Error('Invalid API key. Please check your Gemini API key configuration.');
-            } else {
-              throw new Error(`Gemini API error (${response.status}): ${errorText}`);
-            }
+            console.error(`Failed to analyze page ${pageNumber}`);
+            continue;
           }
 
           const data = await response.json();
@@ -604,18 +542,7 @@ Focus on:
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini API Error Response:', errorText);
-      
-      if (response.status === 503) {
-        throw new Error('Gemini API service is temporarily unavailable. Please try again in a few moments.');
-      } else if (response.status === 429) {
-        throw new Error('API rate limit exceeded. Please wait a moment before trying again.');
-      } else if (response.status === 401 || response.status === 403) {
-        throw new Error('Invalid API key. Please check your Gemini API key configuration.');
-      } else {
-        throw new Error(`Gemini API error (${response.status}): ${errorText}`);
-      }
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
@@ -659,8 +586,6 @@ export const analyzeIndividualPage = async (
   summary: string;
   tnpscRelevance: string;
 }> => {
-  validateApiKey();
-  
   try {
     const languageInstruction = outputLanguage === "tamil" 
       ? "Please provide all responses in Tamil language."
@@ -722,18 +647,7 @@ Focus on:
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini API Error Response:', errorText);
-      
-      if (response.status === 503) {
-        throw new Error('Gemini API service is temporarily unavailable. Please try again in a few moments.');
-      } else if (response.status === 429) {
-        throw new Error('API rate limit exceeded. Please wait a moment before trying again.');
-      } else if (response.status === 401 || response.status === 403) {
-        throw new Error('Invalid API key. Please check your Gemini API key configuration.');
-      } else {
-        throw new Error(`Gemini API error (${response.status}): ${errorText}`);
-      }
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
@@ -773,8 +687,6 @@ export const analyzeMultipleImages = async (
   difficulty: string = "medium",
   outputLanguage: "english" | "tamil" = "english"
 ): Promise<QuestionResult> => {
-  validateApiKey();
-  
   try {
     const analysisResults: AnalysisResult[] = [];
     
