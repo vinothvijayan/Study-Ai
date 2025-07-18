@@ -1,4 +1,5 @@
 
+import { useEffect } from "react";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ const UserProfile = () => {
 
     fetchUserStats();
   }, [user]);
+  
   const handleSaveProfile = () => {
     // In a real app, you'd update the user profile in Firebase
     toast.success("Profile updated successfully!");

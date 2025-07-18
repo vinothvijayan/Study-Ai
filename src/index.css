@@ -239,6 +239,22 @@
     box-shadow: 0 12px 32px rgb(102 126 234 / 0.2);
   }
 
+  /* Quiz Option Styling */
+  .quiz-option {
+    @apply p-4 border-2 border-gray-200 rounded-xl transition-all duration-300 cursor-pointer;
+    @apply hover:border-blue-300 hover:bg-blue-50/50;
+  }
+  
+  .quiz-option.selected {
+    @apply border-blue-500 bg-blue-50 shadow-lg;
+    transform: translateY(-2px);
+  }
+  
+  .quiz-option:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+
   /* Progress Enhancement */
   .progress-elegant {
     @apply h-4 rounded-full overflow-hidden;

@@ -135,20 +135,23 @@ Difficulty Level: ${difficulty}
 ${languageInstruction}
 
 Generate ONLY these types of questions:
-- Multiple choice questions (4 options each) - 70%
-- Assertion-Reason questions - 30%
+- Multiple choice questions (4 options each) - 60%
+- Assertion-Reason questions - 40%
 
 For MCQ questions, provide 4 clear options (A, B, C, D).
 For Assertion-Reason questions, provide:
-- Assertion statement
-- Reason statement  
-- 4 options: (A) Both assertion and reason are true and reason is correct explanation (B) Both assertion and reason are true but reason is not correct explanation (C) Assertion is true but reason is false (D) Both assertion and reason are false
+- Format: "Assertion: [statement] Reason: [statement]"
+- Always use these 4 standard options:
+  A) Both assertion and reason are true and reason is correct explanation of assertion
+  B) Both assertion and reason are true but reason is not correct explanation of assertion  
+  C) Assertion is true but reason is false
+  D) Both assertion and reason are false
 
 Return as a JSON array:
 [
   {
-    "question": "Question text here",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "question": "For MCQ: Question text here | For Assertion-Reason: Assertion: [statement] Reason: [statement]",
+    "options": ["Option A", "Option B", "Option C", "Option D"] // Use standard assertion-reason options for assertion_reason type,
     "answer": "Correct option (A/B/C/D)",
     "type": "mcq" | "assertion_reason",
     "difficulty": "${difficulty}",

@@ -432,7 +432,7 @@ const ModernQuizMode = ({ result, onReset, onBackToAnalysis, difficulty, outputL
               <p className="text-gray-800 text-lg leading-relaxed">{currentQuestion?.question}</p>
             </div>
             
-            {currentQuestion?.options && Array.isArray(currentQuestion.options) && currentQuestion.options.length > 0 && (
+            {currentQuestion?.options && Array.isArray(currentQuestion.options) && currentQuestion.options.length > 0 ? (
               <RadioGroup value={selectedOption} onValueChange={handleAnswerSelect}>
                 <div className="space-y-4">
                   {currentQuestion.options.map((option, index) => (
@@ -458,6 +458,73 @@ const ModernQuizMode = ({ result, onReset, onBackToAnalysis, difficulty, outputL
                   ))}
                 </div>
               </RadioGroup>
+            ) : currentQuestion?.type === "assertion_reason" ? (
+              <div className="space-y-6">
+                {/* Parse assertion-reason question */}
+                {(() => {
+                  const questionText = currentQuestion.question;
+                  const assertionMatch = questionText.match(/Assertion\s*[:\-]?\s*(.*?)(?=Reason|$)/i);
+                  const reasonMatch = questionText.match(/Reason\s*[:\-]?\s*(.*?)$/i);
+                  
+                  const assertion = assertionMatch ? assertionMatch[1].trim() : "";
+                  const reason = reasonMatch ? reasonMatch[1].trim() : "";
+                  
+                  const standardOptions = [
+                    "Both assertion and reason are true and reason is correct explanation of assertion",
+                    "Both assertion and reason are true but reason is not correct explanation of assertion", 
+                    "Assertion is true but reason is false",
+                    "Both assertion and reason are false"
+                  ];
+                  
+                  return (
+                    <>
+                      {assertion && (
+                        <div className="p-4 bg-blue-50 rounded-xl border-l-4 border-blue-500">
+                          <h4 className="font-semibold text-blue-800 mb-2">Assertion (A):</h4>
+                          <p className="text-blue-700">{assertion}</p>
+                        </div>
+                      )}
+                      
+                      {reason && (
+                        <div className="p-4 bg-green-50 rounded-xl border-l-4 border-green-500">
+                          <h4 className="font-semibold text-green-800 mb-2">Reason (R):</h4>
+                          <p className="text-green-700">{reason}</p>
+                        </div>
+                      )}
+                      
+                      <RadioGroup value={selectedOption} onValueChange={handleAnswerSelect}>
+                        <div className="space-y-4">
+                          {standardOptions.map((option, index) => (
+                            <div key={index} className="group">
+                              <div className={`quiz-option ${selectedOption === option ? 'selected' : ''}`}>
+                                <div className="flex items-center space-x-4">
+                                  <RadioGroupItem value={option} id={`option-${index}`} className="w-5 h-5" />
+                                  <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
+                                    <div className="flex items-start gap-3">
+                                      <span className={`font-bold text-lg px-3 py-1 rounded-full ${
+                                        selectedOption === option 
+                                          ? 'bg-blue-500 text-white' 
+                                          : 'bg-gray-200 text-gray-700'
+                                      }`}>
+                                        {String.fromCharCode(65 + index)}
+                                      </span>
+                                      <span className="text-gray-800 text-lg leading-relaxed">{option}</span>
+                                    </div>
+                                  </Label>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </RadioGroup>
+                    </>
+                  );
+                })()}
+              </div>
+            ) : (
+              <div className="p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+                <p className="text-yellow-800">No options available for this question type.</p>
+              </div>
             )}
           </div>
 
