@@ -8,10 +8,6 @@ if (!GEMINI_API_KEY) {
 }
 
 export const analyzeImage = async (file: File, outputLanguage: "english" | "tamil" = "english"): Promise<AnalysisResult> => {
-  if (!GEMINI_API_KEY) {
-    throw new Error('Gemini API key is not configured. Please set VITE_GEMINI_API_KEY environment variable.');
-  }
-
   try {
     const base64Image = await convertToBase64(file);
     
@@ -83,7 +79,18 @@ Focus on:
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Gemini API Error Response:', errorText);
+      
+      if (response.status === 503) {
+        throw new Error('Gemini API service is temporarily unavailable. Please try again in a few moments.');
+      } else if (response.status === 429) {
+        throw new Error('API rate limit exceeded. Please wait a moment before trying again.');
+      } else if (response.status === 401 || response.status === 403) {
+        throw new Error('Invalid API key. Please check your Gemini API key configuration.');
+      } else {
+        throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+      }
     }
 
     const data = await response.json();
@@ -203,7 +210,18 @@ Ensure questions test:
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Gemini API Error Response:', errorText);
+      
+      if (response.status === 503) {
+        throw new Error('Gemini API service is temporarily unavailable. Please try again in a few moments.');
+      } else if (response.status === 429) {
+        throw new Error('API rate limit exceeded. Please wait a moment before trying again.');
+      } else if (response.status === 401 || response.status === 403) {
+        throw new Error('Invalid API key. Please check your Gemini API key configuration.');
+      } else {
+        throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+      }
     }
 
     const data = await response.json();
@@ -309,7 +327,18 @@ Focus on:
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Gemini API Error Response:', errorText);
+      
+      if (response.status === 503) {
+        throw new Error('Gemini API service is temporarily unavailable. Please try again in a few moments.');
+      } else if (response.status === 429) {
+        throw new Error('API rate limit exceeded. Please wait a moment before trying again.');
+      } else if (response.status === 401 || response.status === 403) {
+        throw new Error('Invalid API key. Please check your Gemini API key configuration.');
+      } else {
+        throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+      }
     }
 
     const data = await response.json();
@@ -435,8 +464,18 @@ Focus on:
           });
 
           if (!response.ok) {
-            console.error(`Failed to analyze page ${pageNumber}`);
-            continue;
+            const errorText = await response.text();
+            console.error('Gemini API Error Response:', errorText);
+            
+            if (response.status === 503) {
+              throw new Error('Gemini API service is temporarily unavailable. Please try again in a few moments.');
+            } else if (response.status === 429) {
+              throw new Error('API rate limit exceeded. Please wait a moment before trying again.');
+            } else if (response.status === 401 || response.status === 403) {
+              throw new Error('Invalid API key. Please check your Gemini API key configuration.');
+            } else {
+              throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+            }
           }
 
           const data = await response.json();
@@ -554,7 +593,18 @@ Focus on:
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Gemini API Error Response:', errorText);
+      
+      if (response.status === 503) {
+        throw new Error('Gemini API service is temporarily unavailable. Please try again in a few moments.');
+      } else if (response.status === 429) {
+        throw new Error('API rate limit exceeded. Please wait a moment before trying again.');
+      } else if (response.status === 401 || response.status === 403) {
+        throw new Error('Invalid API key. Please check your Gemini API key configuration.');
+      } else {
+        throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+      }
     }
 
     const data = await response.json();
@@ -659,7 +709,18 @@ Focus on:
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Gemini API Error Response:', errorText);
+      
+      if (response.status === 503) {
+        throw new Error('Gemini API service is temporarily unavailable. Please try again in a few moments.');
+      } else if (response.status === 429) {
+        throw new Error('API rate limit exceeded. Please wait a moment before trying again.');
+      } else if (response.status === 401 || response.status === 403) {
+        throw new Error('Invalid API key. Please check your Gemini API key configuration.');
+      } else {
+        throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+      }
     }
 
     const data = await response.json();
