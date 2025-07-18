@@ -4,7 +4,7 @@ import { extractTextFromPdfPage, extractPageRangeFromOcr } from "@/utils/pdfRead
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 const validateApiKey = () => {
-  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'AIzaSyCnwEpdvM7GnG_Af28iFULVgINlbhweFss) {
+  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_ACTUAL_GEMINI_API_KEY') {
     throw new Error(
       'Gemini API key is not configured properly. Please:\n' +
       '1. Get your API key from https://makersuite.google.com/app/apikey\n' +
