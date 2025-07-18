@@ -1,7 +1,11 @@
 import { AnalysisResult, QuestionResult } from "@/components/StudyAssistant";
 import { extractTextFromPdfPage, extractPageRangeFromOcr } from "@/utils/pdfReader";
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyAJ2P2TqBOXQncnBgT0T_BNsLcAA7cToo4";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
+if (!GEMINI_API_KEY) {
+  console.error('VITE_GEMINI_API_KEY environment variable is not set');
+}
 
 export const analyzeImage = async (file: File, outputLanguage: "english" | "tamil" = "english"): Promise<AnalysisResult> => {
   try {
@@ -109,6 +113,10 @@ export const generateQuestions = async (
   difficulty: string = "medium",
   outputLanguage: "english" | "tamil" = "english"
 ): Promise<QuestionResult> => {
+  if (!GEMINI_API_KEY) {
+    throw new Error('Gemini API key is not configured. Please set VITE_GEMINI_API_KEY environment variable.');
+  }
+
   try {
     const combinedContent = analysisResults.map(result => ({
       keyPoints: result.keyPoints.join('\n'),
