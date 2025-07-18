@@ -8,6 +8,10 @@ if (!GEMINI_API_KEY) {
 }
 
 export const analyzeImage = async (file: File, outputLanguage: "english" | "tamil" = "english"): Promise<AnalysisResult> => {
+  if (!GEMINI_API_KEY) {
+    throw new Error('Gemini API key is not configured. Please set VITE_GEMINI_API_KEY environment variable.');
+  }
+
   try {
     const base64Image = await convertToBase64(file);
     
