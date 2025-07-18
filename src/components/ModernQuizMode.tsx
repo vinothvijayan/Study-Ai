@@ -6,12 +6,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, CheckCircle, AlertTriangle, Brain, Trophy, Target, Award, Clock, Download, Sparkles } from "lucide-react";
-import { QuestionResult, Question } from "./StudyAssistant";
-import { downloadPDF } from "@/utils/pdfUtils";
-import { saveStudyHistory } from "@/services/studyHistoryService";
+import { QuestionResult, Question } from "./StudyAssistant"; // Assuming these types are defined elsewhere
+import { downloadPDF } from "@/utils/pdfUtils"; // Assuming you have a PDF utility
+import { saveStudyHistory } from "@/services/studyHistoryService"; // Assuming you have a service for Firebase
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "@/config/firebase";
+import { auth } from "@/config/firebase"; // Assuming your Firebase config is here
 import { toast } from "sonner";
+
+// --- Type Definitions ---
 
 interface ModernQuizModeProps {
   result: QuestionResult;
@@ -39,7 +41,11 @@ interface QuizResult {
   }[];
 }
 
+
+// --- The Component ---
+
 const ModernQuizMode = ({ result, onReset, onBackToAnalysis, difficulty, outputLanguage }: ModernQuizModeProps) => {
+  // --- State Management ---
   const [user] = useAuthState(auth);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
@@ -48,9 +54,12 @@ const ModernQuizMode = ({ result, onReset, onBackToAnalysis, difficulty, outputL
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
   const [startTime] = useState<Date>(new Date());
 
+  // --- Derived State & Constants ---
   const questions = result.questions || [];
   const currentQuestion = questions[currentQuestionIndex];
   const progress = questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
+
+  // --- Helper Functions ---
 
   const getDifficultyColor = (diff: string) => {
     const colors = {
@@ -72,6 +81,16 @@ const ModernQuizMode = ({ result, onReset, onBackToAnalysis, difficulty, outputL
         return '❓';
     }
   };
+  
+  const getTimeTaken = () => {
+    const endTime = new Date();
+    const diffMs = endTime.getTime() - startTime.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffSecs = Math.floor((diffMs % 60000) / 1000);
+    return `${diffMins}m ${diffSecs}s`;
+  };
+  
+  // --- Event Handlers ---
 
   const handleAnswerSelect = (value: string) => {
     setSelectedOption(value);
@@ -134,7 +153,6 @@ const ModernQuizMode = ({ result, onReset, onBackToAnalysis, difficulty, outputL
 
     setQuizResult(quizResultData);
 
-    // Save quiz results to study history
     if (user) {
       saveStudyHistory(
         user.uid,
@@ -180,7 +198,6 @@ const ModernQuizMode = ({ result, onReset, onBackToAnalysis, difficulty, outputL
         toast.error("No quiz results available to download");
         return;
       }
-
       await downloadPDF({
         title: `TNPSC Quiz Results - ${difficulty.toUpperCase()}`,
         content: quizResult,
@@ -193,13 +210,7 @@ const ModernQuizMode = ({ result, onReset, onBackToAnalysis, difficulty, outputL
     }
   };
 
-  const getTimeTaken = () => {
-    const endTime = new Date();
-    const diffMs = endTime.getTime() - startTime.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffSecs = Math.floor((diffMs % 60000) / 1000);
-    return `${diffMins}m ${diffSecs}s`;
-  };
+  // --- Render Logic ---
 
   if (questions.length === 0) {
     return (
@@ -208,11 +219,11 @@ const ModernQuizMode = ({ result, onReset, onBackToAnalysis, difficulty, outputL
           <AlertTriangle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-800 mb-4">No Questions Available</h3>
           <p className="text-gray-600 mb-6">
-            Unable to generate quiz questions from the uploaded content. Please try uploading different files.
+            Unable to generate quiz questions. Please try again with different content.
           </p>
           <Button onClick={onReset} className="btn-primary">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Upload New Files
+            Start Over
           </Button>
         </Card>
       </div>
@@ -223,16 +234,14 @@ const ModernQuizMode = ({ result, onReset, onBackToAnalysis, difficulty, outputL
     return (
       <div className="min-h-screen p-4">
         <div className="container mx-auto max-w-4xl space-y-6">
-          {/* Results Header */}
+          {/* Results Header Card */}
           <Card className="glass-card p-8 text-center animate-fadeInScale hover-lift">
             <div className="flex items-center justify-center gap-4 mb-6">
               <div className="p-4 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 shadow-elegant pulse-glow">
                 <Trophy className="h-10 w-10 text-white" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold gradient-text">
-                  Quiz Complete!
-                </h1>
+                <h1 className="text-4xl font-bold gradient-text">Quiz Complete!</h1>
                 <p className="text-gray-600 mt-2">TNPSC Practice Results</p>
               </div>
             </div>
@@ -247,115 +256,64 @@ const ModernQuizMode = ({ result, onReset, onBackToAnalysis, difficulty, outputL
               <div className="text-lg font-medium text-gray-600 glass-card p-4 mb-4">
                 {getPerformanceMessage(quizResult.percentage)}
               </div>
-
               <div className="flex justify-center gap-6 text-sm text-gray-600 stagger-animation">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  <span>Time: {getTimeTaken()}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Target className="h-4 w-4" />
-                  <span>Difficulty: {difficulty.toUpperCase()}</span>
-                </div>
+                <div className="flex items-center gap-2"><Clock className="h-4 w-4" /><span>Time: {getTimeTaken()}</span></div>
+                <div className="flex items-center gap-2"><Target className="h-4 w-4" /><span>Difficulty: {difficulty.toUpperCase()}</span></div>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                onClick={handleDownloadResults} 
-                className="btn-secondary"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Download Results
-              </Button>
-              <Button 
-                onClick={onBackToAnalysis} 
-                className="btn-secondary"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Analysis
-              </Button>
-              <Button 
-                onClick={onReset} 
-                className="btn-primary"
-              >
-                <Sparkles className="h-4 w-4 mr-2" />
-                New Quiz
-              </Button>
+              <Button onClick={handleDownloadResults} className="btn-secondary"><Download className="h-4 w-4 mr-2" />Download Results</Button>
+              <Button onClick={onBackToAnalysis} className="btn-secondary"><ArrowLeft className="h-4 w-4 mr-2" />Back to Analysis</Button>
+              <Button onClick={onReset} className="btn-primary"><Sparkles className="h-4 w-4 mr-2" />New Quiz</Button>
             </div>
           </Card>
 
-          {/* Answer Review */}
+          {/* Answer Review Section */}
           <div className="space-y-4">
             <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
-              <Target className="h-6 w-6 text-blue-600" />
-              Answer Review
+              <Target className="h-6 w-6 text-blue-600" /> Answer Review
             </h2>
-            
             {quizResult.answers.map((answer, index) => (
-              <Card key={index} className={`glass-card p-6 hover-lift animate-fadeInUp ${
-                answer.isCorrect 
-                  ? 'border-l-4 border-l-green-500' 
-                  : 'border-l-4 border-l-red-500'
-              }`} style={{animationDelay: `${index * 0.1}s`}}>
+              <Card key={index} className={`glass-card p-6 hover-lift animate-fadeInUp ${answer.isCorrect ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-red-500'}`} style={{animationDelay: `${index * 0.1}s`}}>
                 <div className="space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`p-2 rounded-full ${answer.isCorrect ? 'bg-green-100' : 'bg-red-100'}`}>
-                        {answer.isCorrect ? (
-                          <CheckCircle className="h-5 w-5 text-green-600" />
-                        ) : (
-                          <AlertTriangle className="h-5 w-5 text-red-600" />
-                        )}
+                        {answer.isCorrect ? <CheckCircle className="h-5 w-5 text-green-600" /> : <AlertTriangle className="h-5 w-5 text-red-600" />}
                       </div>
-                      <span className="text-lg font-semibold text-gray-800">
-                        Question {index + 1} {getQuestionTypeIcon(answer.question.type)}
-                      </span>
+                      <span className="text-lg font-semibold text-gray-800">Question {index + 1} {getQuestionTypeIcon(answer.question.type)}</span>
                     </div>
                     <div className="flex gap-2 flex-wrap">
-                      <Badge className={`bg-gradient-to-r ${getDifficultyColor(answer.question.difficulty)} text-white`}>
-                        {answer.question.difficulty.toUpperCase()}
-                      </Badge>
-                      <Badge className="badge-elegant bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border-blue-200">
-                        {answer.question.tnpscGroup}
-                      </Badge>
-                      <Badge className="badge-elegant bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-purple-200">
-                        {answer.question.type.toUpperCase()}
-                      </Badge>
+                      <Badge className={`bg-gradient-to-r ${getDifficultyColor(answer.question.difficulty)} text-white`}>{answer.question.difficulty.toUpperCase()}</Badge>
+                      <Badge className="badge-elegant bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border-blue-200">{answer.question.tnpscGroup}</Badge>
+                      <Badge className="badge-elegant bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-purple-200">{answer.question.type.toUpperCase()}</Badge>
                     </div>
                   </div>
                   
                   <div className="glass-card p-4">
-                    <p className="text-gray-800 text-lg leading-relaxed">{answer.question.question}</p>
+                    {answer.question.type === 'assertion_reason' && answer.question.reason ? (
+                      <div className="space-y-3">
+                        <div className="text-lg leading-relaxed"><strong className="font-semibold text-gray-800">Assertion (A):</strong> <span className="text-gray-800">{answer.question.question}</span></div>
+                        <div className="text-lg leading-relaxed"><strong className="font-semibold text-gray-800">Reason (R):</strong> <span className="text-gray-800">{answer.question.reason}</span></div>
+                      </div>
+                    ) : (
+                      <p className="text-gray-800 text-lg leading-relaxed">{answer.question.question}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-3">
-                    <div className={`p-4 rounded-xl ${
-                      answer.isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
-                    }`}>
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-gray-700">Your Answer:</span>
-                        <span className={`font-medium ${answer.isCorrect ? 'text-green-700' : 'text-red-700'}`}>
-                          {answer.userAnswer}
-                        </span>
-                      </div>
+                    <div className={`p-4 rounded-xl ${answer.isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                      <div className="flex items-center gap-2"><span className="font-semibold text-gray-700">Your Answer:</span><span className={`font-medium ${answer.isCorrect ? 'text-green-700' : 'text-red-700'}`}>{answer.userAnswer}</span></div>
                     </div>
-                    
                     {!answer.isCorrect && (
                       <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-gray-700">Correct Answer:</span>
-                          <span className="font-medium text-green-700">{answer.correctAnswer}</span>
-                        </div>
+                        <div className="flex items-center gap-2"><span className="font-semibold text-gray-700">Correct Answer:</span><span className="font-medium text-green-700">{answer.correctAnswer}</span></div>
                       </div>
                     )}
-
                     {answer.question.explanation && (
                       <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                        <div className="flex items-start gap-2">
-                          <span className="font-semibold text-gray-700">Explanation:</span>
-                          <span className="text-blue-700">{answer.question.explanation}</span>
-                        </div>
+                        <div className="flex items-start gap-2"><span className="font-semibold text-gray-700">Explanation:</span><span className="text-blue-700">{answer.question.explanation}</span></div>
                       </div>
                     )}
                   </div>
@@ -371,68 +329,51 @@ const ModernQuizMode = ({ result, onReset, onBackToAnalysis, difficulty, outputL
   return (
     <div className="min-h-screen p-4">
       <div className="container mx-auto max-w-4xl space-y-6">
-        {/* Quiz Header */}
+        {/* Quiz Header Card */}
         <Card className="glass-card p-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Button
-                onClick={onBackToAnalysis}
-                variant="ghost"
-                className="text-gray-600 hover:text-gray-800"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Analysis
-              </Button>
-              
+              <Button onClick={onBackToAnalysis} variant="ghost" className="text-gray-600 hover:text-gray-800"><ArrowLeft className="h-4 w-4 mr-2" />Back to Analysis</Button>
               <div className="flex items-center gap-3">
-                <div className={`p-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg`}>
-                  <Brain className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-800">TNPSC Smart Quiz</h1>
-                  <p className="text-gray-600 text-sm">Question {currentQuestionIndex + 1} of {questions.length}</p>
-                </div>
+                <div className={`p-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg`}><Brain className="h-5 w-5 text-white" /></div>
+                <div><h1 className="text-xl font-bold text-gray-800">TNPSC Smart Quiz</h1><p className="text-gray-600 text-sm">Question {currentQuestionIndex + 1} of {questions.length}</p></div>
               </div>
             </div>
-
             <div className="space-y-2">
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Progress</span>
-                <span>{Math.round(progress)}% Complete</span>
-              </div>
-              <div className="progress-elegant">
-                <div className="progress-fill" style={{ width: `${progress}%` }}></div>
-              </div>
+              <div className="flex justify-between text-sm text-gray-600"><span>Progress</span><span>{Math.round(progress)}% Complete</span></div>
+              <div className="progress-elegant"><div className="progress-fill" style={{ width: `${progress}%` }}></div></div>
             </div>
           </div>
         </Card>
 
-        {/* Current Question */}
+        {/* Current Question Card */}
         <Card className="glass-card p-8">
           <div className="space-y-6">
             <div className="flex items-start justify-between">
               <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{getQuestionTypeIcon(currentQuestion?.type)}</span>
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    Question {currentQuestionIndex + 1}
-                  </h2>
-                </div>
-                <Badge className={`bg-gradient-to-r ${getDifficultyColor(difficulty)} text-white`}>
-                  {difficulty.replace('-', ' ').toUpperCase()}
-                </Badge>
+                <div className="flex items-center gap-2"><span className="text-2xl">{getQuestionTypeIcon(currentQuestion?.type)}</span><h2 className="text-2xl font-bold text-gray-800">Question {currentQuestionIndex + 1}</h2></div>
+                <Badge className={`bg-gradient-to-r ${getDifficultyColor(difficulty)} text-white`}>{difficulty.replace('-', ' ').toUpperCase()}</Badge>
               </div>
-              
-              <Badge variant="outline" className="text-sm">
-                {currentQuestion?.tnpscGroup || "TNPSC"}
-              </Badge>
+              <Badge variant="outline" className="text-sm">{currentQuestion?.tnpscGroup || "TNPSC"}</Badge>
             </div>
             
             <div className="glass-card p-6">
-              <p className="text-gray-800 text-lg leading-relaxed">{currentQuestion?.question}</p>
+              {currentQuestion?.type === 'assertion_reason' && currentQuestion.reason ? (
+                <div className="space-y-4">
+                  <p className="text-gray-600 text-sm">Given below are two statements: one is labeled as Assertion A and the other is labeled as Reason R</p>
+                  <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-white/50">
+                    <div className="text-lg"><strong className="font-semibold text-gray-900">Assertion (A):</strong> <span className="text-gray-800">{currentQuestion.question}</span></div>
+                    <hr className="border-gray-200" />
+                    <div className="text-lg"><strong className="font-semibold text-gray-900">Reason (R):</strong> <span className="text-gray-800">{currentQuestion.reason}</span></div>
+                  </div>
+                  <p className="text-gray-600 text-sm pt-2">In light of the above statements, choose the most appropriate answer from the options given below</p>
+                </div>
+              ) : (
+                <p className="text-gray-800 text-lg leading-relaxed">{currentQuestion?.question}</p>
+              )}
             </div>
             
-            {currentQuestion?.options && Array.isArray(currentQuestion.options) && currentQuestion.options.length > 0 ? (
+            {currentQuestion?.options && Array.isArray(currentQuestion.options) && currentQuestion.options.length > 0 && (
               <RadioGroup value={selectedOption} onValueChange={handleAnswerSelect}>
                 <div className="space-y-4">
                   {currentQuestion.options.map((option, index) => (
@@ -442,12 +383,8 @@ const ModernQuizMode = ({ result, onReset, onBackToAnalysis, difficulty, outputL
                           <RadioGroupItem value={option} id={`option-${index}`} className="w-5 h-5" />
                           <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
                             <div className="flex items-start gap-3">
-                              <span className={`font-bold text-lg px-3 py-1 rounded-full ${
-                                selectedOption === option 
-                                  ? 'bg-blue-500 text-white' 
-                                  : 'bg-gray-200 text-gray-700'
-                              }`}>
-                                {String.fromCharCode(65 + index)}
+                              <span className={`font-bold text-lg px-2 py-1 rounded-md min-w-[2rem] text-center ${selectedOption === option ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                                {index + 1}
                               </span>
                               <span className="text-gray-800 text-lg leading-relaxed">{option}</span>
                             </div>
@@ -458,105 +395,17 @@ const ModernQuizMode = ({ result, onReset, onBackToAnalysis, difficulty, outputL
                   ))}
                 </div>
               </RadioGroup>
-            ) : currentQuestion?.type === "assertion_reason" ? (
-              <div className="space-y-6">
-                {/* Parse assertion-reason question */}
-                {(() => {
-                  const questionText = currentQuestion.question;
-                  const assertionMatch = questionText.match(/Assertion\s*[:\-]?\s*(.*?)(?=Reason|$)/i);
-                  const reasonMatch = questionText.match(/Reason\s*[:\-]?\s*(.*?)$/i);
-                  
-                  const assertion = assertionMatch ? assertionMatch[1].trim() : "";
-                  const reason = reasonMatch ? reasonMatch[1].trim() : "";
-                  
-                  const standardOptions = [
-                    "Both assertion and reason are true and reason is correct explanation of assertion",
-                    "Both assertion and reason are true but reason is not correct explanation of assertion", 
-                    "Assertion is true but reason is false",
-                    "Both assertion and reason are false"
-                  ];
-                  
-                  return (
-                    <>
-                      {assertion && (
-                        <div className="p-4 bg-blue-50 rounded-xl border-l-4 border-blue-500">
-                          <h4 className="font-semibold text-blue-800 mb-2">Assertion (A):</h4>
-                          <p className="text-blue-700">{assertion}</p>
-                        </div>
-                      )}
-                      
-                      {reason && (
-                        <div className="p-4 bg-green-50 rounded-xl border-l-4 border-green-500">
-                          <h4 className="font-semibold text-green-800 mb-2">Reason (R):</h4>
-                          <p className="text-green-700">{reason}</p>
-                        </div>
-                      )}
-                      
-                      <RadioGroup value={selectedOption} onValueChange={handleAnswerSelect}>
-                        <div className="space-y-4">
-                          {standardOptions.map((option, index) => (
-                            <div key={index} className="group">
-                              <div className={`quiz-option ${selectedOption === option ? 'selected' : ''}`}>
-                                <div className="flex items-center space-x-4">
-                                  <RadioGroupItem value={option} id={`option-${index}`} className="w-5 h-5" />
-                                  <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
-                                    <div className="flex items-start gap-3">
-                                      <span className={`font-bold text-lg px-3 py-1 rounded-full ${
-                                        selectedOption === option 
-                                          ? 'bg-blue-500 text-white' 
-                                          : 'bg-gray-200 text-gray-700'
-                                      }`}>
-                                        {String.fromCharCode(65 + index)}
-                                      </span>
-                                      <span className="text-gray-800 text-lg leading-relaxed">{option}</span>
-                                    </div>
-                                  </Label>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </RadioGroup>
-                    </>
-                  );
-                })()}
-              </div>
-            ) : (
-              <div className="p-4 bg-yellow-50 rounded-xl border border-yellow-200">
-                <p className="text-yellow-800">No options available for this question type.</p>
-              </div>
             )}
           </div>
 
           <div className="flex justify-between items-center pt-6 border-t border-gray-200 mt-8">
-            <Button
-              onClick={handlePreviousQuestion}
-              variant="outline"
-              disabled={currentQuestionIndex === 0}
-              className="btn-secondary"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Previous
-            </Button>
-
-            <div className="text-sm text-gray-600 text-center">
-              <span className="font-medium">{currentQuestionIndex + 1}</span> of <span className="font-medium">{questions.length}</span>
-            </div>
-
-            <Button
-              onClick={handleNextQuestion}
-              className="btn-primary"
-            >
+            <Button onClick={handlePreviousQuestion} variant="outline" disabled={currentQuestionIndex === 0} className="btn-secondary"><ArrowLeft className="h-4 w-4 mr-2" />Previous</Button>
+            <div className="text-sm text-gray-600 text-center"><span className="font-medium">{currentQuestionIndex + 1}</span> of <span className="font-medium">{questions.length}</span></div>
+            <Button onClick={handleNextQuestion} className="btn-primary">
               {currentQuestionIndex === questions.length - 1 ? (
-                <>
-                  <Award className="h-4 w-4 mr-2" />
-                  Submit Quiz
-                </>
+                <><Award className="h-4 w-4 mr-2" />Submit Quiz</>
               ) : (
-                <>
-                  Next Question
-                  <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />
-                </>
+                <>Next Question<ArrowLeft className="h-4 w-4 ml-2 rotate-180" /></>
               )}
             </Button>
           </div>
