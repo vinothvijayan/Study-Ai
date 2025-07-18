@@ -3,11 +3,20 @@ import { extractTextFromPdfPage, extractPageRangeFromOcr } from "@/utils/pdfRead
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-if (!GEMINI_API_KEY) {
-  console.error('VITE_GEMINI_API_KEY environment variable is not set');
-}
+const validateApiKey = () => {
+  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_ACTUAL_GEMINI_API_KEY') {
+    throw new Error(
+      'Gemini API key is not configured properly. Please:\n' +
+      '1. Get your API key from https://makersuite.google.com/app/apikey\n' +
+      '2. Replace YOUR_ACTUAL_GEMINI_API_KEY in the .env file with your real API key\n' +
+      '3. Restart the development server'
+    );
+  }
+};
 
 export const analyzeImage = async (file: File, outputLanguage: "english" | "tamil" = "english"): Promise<AnalysisResult> => {
+  validateApiKey();
+  
   try {
     const base64Image = await convertToBase64(file);
     
@@ -124,9 +133,7 @@ export const generateQuestions = async (
   difficulty: string = "medium",
   outputLanguage: "english" | "tamil" = "english"
 ): Promise<QuestionResult> => {
-  if (!GEMINI_API_KEY) {
-    throw new Error('Gemini API key is not configured. Please set VITE_GEMINI_API_KEY environment variable.');
-  }
+  validateApiKey();
 
   try {
     const combinedContent = analysisResults.map(result => ({
@@ -271,6 +278,8 @@ export const generatePageAnalysis = async (
   importance: "high" | "medium" | "low";
   tnpscRelevance: string;
 }> => {
+  validateApiKey();
+  
   try {
     const textContent = await extractTextFromPdfPage(file, pageNumber);
     
@@ -384,6 +393,8 @@ export const analyzePdfContentComprehensive = async (
   totalKeyPoints: string[];
   tnpscCategories: string[];
 }> => {
+  validateApiKey();
+  
   try {
     const pageAnalyses = [];
     const allKeyPoints: string[] = [];
@@ -648,6 +659,8 @@ export const analyzeIndividualPage = async (
   summary: string;
   tnpscRelevance: string;
 }> => {
+  validateApiKey();
+  
   try {
     const languageInstruction = outputLanguage === "tamil" 
       ? "Please provide all responses in Tamil language."
@@ -760,6 +773,8 @@ export const analyzeMultipleImages = async (
   difficulty: string = "medium",
   outputLanguage: "english" | "tamil" = "english"
 ): Promise<QuestionResult> => {
+  validateApiKey();
+  
   try {
     const analysisResults: AnalysisResult[] = [];
     
